@@ -10,11 +10,11 @@ import java.util.Map;
  *
  * @author itsku
  */
-public class NorenRoutes {
+public class NorenDRoutes {
     public Map<String, String> routes;
-    public static String _host = "http://kurma.kambala.co.in:9959/NorenWClient/";
+    public static String _host = "http://rama.kambala.co.in:9990/DealerWClient/";
     // Initialize all routes,
-       public NorenRoutes(){        
+       public NorenDRoutes(){        
         routes = new HashMap<String, String>(){{
            put("authorize", "/QuickAuth");
            put("logout", "/Logout");
@@ -24,6 +24,12 @@ public class NorenRoutes {
            put("placeorder", "/PlaceOrder");
            put("modifyorder", "/ModifyOrder");
            put("cancelorder", "/CancelOrder");
+           put("getsecurityinfo", "/GetSecurityInfo");
+           put("logout", "/Logout"); 
+           put("exitorder", "/ExitSNOOrder"); 
+           put("getquotes", "/GetQuotes"); 
+           put("getclients", "/GetClients"); 
+           put("getpositions", "/InteropPositionBook");
         }};
        }
        public String get(String key){

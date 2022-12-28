@@ -19,13 +19,13 @@ import okhttp3.MediaType;
  *
  * @author itsku
  */
-public class NorenRequests {
+public class NorenDRequests {
   OkHttpClient client = new OkHttpClient();
-  NorenRoutes routes = new NorenRoutes();
+  NorenDRoutes routes = new NorenDRoutes();
   public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   
-  public NorenRequests(String host){                
-        NorenRoutes._host = host;
+  public NorenDRequests(String host){                
+        NorenDRoutes._host = host;
     }
   public String encodeValue(String value) {
         try {

@@ -11,16 +11,17 @@ import org.json.JSONObject;
  *
  * @author itsku
  */
-public class NorenApiJava {    
+public class NorenDApiJava {    
     String _host;
-    NorenRequests _api;
-    public NorenApiJava(String host){
+    NorenDRequests _api;
+    public NorenDApiJava(String host){
         _host = host;
-        _api = new NorenRequests(host);
+        _api = new NorenDRequests(host);
     }
     private String _userid;    
     private String _actid;
     private String _key;
+    private String _passwordsha;
     
     public String login(String userid,String password, String twoFA, String vendor_code, String api_secret, String imei) {
         String url = _api.routes.get("authorize");
@@ -54,17 +55,6 @@ public class NorenApiJava {
         return response;   
     }
     
-    public JSONObject search(String exchange, String searchtext){
-        String url = _api.routes.get("searchscrip");
-        JSONObject jsonObject = new JSONObject();
-        
-        jsonObject.put("uid", _userid);
-        jsonObject.put("exch", exchange);
-        jsonObject.put("stext", _api.encodeValue(searchtext));
-        String response = _api.post(url, _key, jsonObject);
-        JSONObject jsonResp = new JSONObject(response);
-        return jsonResp;   
-    }
     public JSONArray get_order_book(){
         String url = _api.routes.get("orderbook");
         JSONObject jsonObject = new JSONObject();
@@ -80,6 +70,28 @@ public class NorenApiJava {
         }
         return null;       
     }
+    public String log_out(){
+        String url = _api.routes.get("logout");
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("uid", _userid);
+
+        String response = _api.post(url, _key, jsonObject);
+        
+        JSONObject jsonResp = new JSONObject(response);
+        
+        String stat = jsonResp.getString("stat");
+        if("Ok".equals(stat))
+        {
+        _userid = null;
+        _actid = null;
+        _key =null;
+        _passwordsha=null;
+        }
+        
+        return   response;   
+        
+    }   
     
     public JSONArray get_trade_book(){
         String url = _api.routes.get("tradebook");
@@ -97,7 +109,7 @@ public class NorenApiJava {
         return null;         
     }
     
-    public JSONObject place_order(String buy_or_sell,String product_type,
+    public JSONObject place_order(String buy_or_sell,String product_type,String actid,
                     String exchange,String tradingsymbol,Integer quantity,Integer discloseqty,
                     String price_type,Double price,String remarks,Double trigger_price,
                     String retention, String amo,Double bookloss_price,Double bookprofit_price,Double trail_price){
@@ -106,7 +118,7 @@ public class NorenApiJava {
         
         jsonObject.put("uid", _userid);
         jsonObject.put("ordersource","API");
-        jsonObject.put("actid"  ,_actid);
+        jsonObject.put("actid"  ,actid);
         jsonObject.put("trantype",buy_or_sell);
         jsonObject.put("prd"     ,product_type);
         jsonObject.put("exch"    ,exchange);
@@ -131,12 +143,12 @@ public class NorenApiJava {
     }
             
     public JSONObject modify_order(String orderno,String exchange,String tradingsymbol,Integer newquantity,
-                    String newprice_type,Double newprice,Double newtrigger_price,Double bookloss_price, Double bookprofit_price , Double trail_price){
+                                   String newprice_type,Double newprice,Double newtrigger_price,Double bookloss_price, Double bookprofit_price , Double trail_price){
         String url = _api.routes.get("modifyorder");
         JSONObject jsonObject = new JSONObject();
         
         jsonObject.put("uid", _userid);
-        jsonObject.put("ordersource","API");
+        jsonObject.put("ordersource","API");    
         jsonObject.put("actid"  ,_actid);
         jsonObject.put("norenordno"  ,orderno);
         jsonObject.put("exch"  ,exchange);
@@ -180,9 +192,83 @@ public class NorenApiJava {
         JSONObject jsonResp = new JSONObject(response);
         return jsonResp; 
     }
+    
+    public JSONObject get_security_info(String exchange,String contract_token ){
+        String url = _api.routes.get("getsecurityinfo");
+        JSONObject jsonObject = new JSONObject();
+         
+        jsonObject.put("uid"  ,_userid);
+        jsonObject.put("exch"  , exchange);
+        jsonObject.put("token"  ,contract_token);
+        
+        String response = _api.post(url, _key, jsonObject);
+        JSONObject jsonResp = new JSONObject(response);
+        return jsonResp;
+    }
+    
+    public JSONObject exit_order(String orderno,String product_type){
+        String url = _api.routes.get("exitorder");
+        JSONObject jsonObject = new JSONObject();
+        
+        jsonObject.put("uid", _userid);
+        jsonObject.put("norenordno",orderno);        
+        jsonObject.put("prd"     ,product_type);
+        
+        
+        String response = _api.post(url, _key, jsonObject);
+        JSONObject jsonResp = new JSONObject(response);
+        return jsonResp; 
+    }
+    
+    public JSONObject get_quotes(String exchange,String contract_token){
+        String url = _api.routes.get("getquotes");
+        JSONObject jsonObject = new JSONObject();
+        
+        jsonObject.put("uid", _userid);
+        jsonObject.put("exch", exchange);      
+        jsonObject.put("token"  ,contract_token);
+        
+        String response = _api.post(url, _key, jsonObject);
+        JSONObject jsonResp = new JSONObject(response);
+        
+        if (!jsonResp.getString("stat").equals("Ok")) {
+        return null;
+        }
+
+        return jsonResp;
+     
+    }
+    
+    public JSONObject get_clients(){
+        String url = _api.routes.get("getclients");
+        JSONObject jsonObject = new JSONObject();
+        
+        jsonObject.put("uid", _userid);
+   
+        String response = _api.post(url, _key, jsonObject);
+        JSONObject jsonResp = new JSONObject(response);
+        return jsonResp; 
+    }
+    
+    public JSONArray get_positions(){
+        String url = _api.routes.get("getpositions");
+        JSONObject jsonObject = new JSONObject();
+        
+        jsonObject.put("uid", _userid);
+        
+        String response = _api.post(url, _key, jsonObject);
+        System.out.println(response);
+        if(response.charAt(0) == '[')
+        {
+            JSONArray jsonResp = new JSONArray(response);
+            return jsonResp;
+        }
+        return null;
+    }
+
     //public static void main(String[] args) {
     //    System.out.println("Hello and Welcom to Noren World!");
-    //    NorenApiJava api = new NorenApiJava("http://kurma.kambala.co.in:9959/NorenWClient/");
+    //    NorenDApiJava api = new NorenDApiJava("http://kurma.kambala.co.in:9959/NorenWClient/");
         
     //    String response = api.login("MOBKUMAR", "Zxc@1234", "01-01-1970", "IDART_DESK", "12be8cef3b1758f5", "java-");
     //    System.out.println(response);
@@ -200,4 +286,5 @@ public class NorenApiJava {
     //    if(book != null)
     //        System.out.println(book.toString());       
     //}   
+
 }
